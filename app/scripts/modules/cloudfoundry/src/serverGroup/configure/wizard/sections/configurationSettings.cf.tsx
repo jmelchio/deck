@@ -653,9 +653,16 @@ class ConfigurationSettingsImpl extends React.Component<ICloudFoundryServerGroup
       if (values.manifest.env) {
         const existingKeys: any = {};
         values.manifest.env.forEach(function(e) {
+          const envVarRegex = /^[a-zA-Z_][\w_]*$/gm;
           if (!e.key || !e.value) {
             errors.manifest = errors.manifest || {};
             errors.manifest.env = `An environment variable was not set`;
+          } else if (envVarRegex.exec(e.key) === null) {
+            errors.manifest = errors.manifest || {};
+            errors.manifest.env =
+              `Environment variable "` +
+              e.key +
+              `" may not contain spaces or punctuation, and must start with a letter or underscore`;
           } else {
             const value = existingKeys[e.key];
             if (!value) {
