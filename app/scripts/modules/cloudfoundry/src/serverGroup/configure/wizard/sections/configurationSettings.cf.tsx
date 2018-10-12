@@ -91,7 +91,7 @@ class ConfigurationSettingsImpl extends React.Component<ICloudFoundryServerGroup
           instances: 1,
           buildpack: undefined,
           routes: [],
-          env: [],
+          env: {},
           services: [],
         };
         break;

@@ -1,15 +1,10 @@
 import * as React from 'react';
 
-import { isEmpty, map } from 'lodash';
+import { isEmpty } from 'lodash';
 
 import { AccountTag, CollapsibleSection, IServerGroupDetailsSectionProps, timestamp } from '@spinnaker/core';
 
-import {
-  ICloudFoundryBuildpack,
-  ICloudFoundryServerGroup,
-  ICloudFoundryEnvVar,
-  ICloudFoundryServiceInstance,
-} from 'cloudfoundry/domain';
+import { ICloudFoundryBuildpack, ICloudFoundryServerGroup, ICloudFoundryServiceInstance } from 'cloudfoundry/domain';
 
 export interface ICloudFoundryServerGroupDetailsSectionProps extends IServerGroupDetailsSectionProps {
   serverGroup: ICloudFoundryServerGroup;
@@ -100,11 +95,11 @@ export class CloudFoundryInfoDetailsSection extends React.Component<ICloudFoundr
         {!isEmpty(serverGroup.env) && (
           <CollapsibleSection heading="Environment Variables" defaultExpanded={true}>
             <dl className="dl-horizontal dl-flex">
-              {map(serverGroup.env, (obj: ICloudFoundryEnvVar, index: number) => {
+              {[...serverGroup.env].map((obj: [string, string], index: number) => {
                 return (
                   <div key={index}>
-                    <dt>{obj.key}</dt>
-                    <dd>{obj.value}</dd>
+                    <dt>{obj[0]}</dt>
+                    <dd>{obj[1]}</dd>
                   </div>
                 );
               })}

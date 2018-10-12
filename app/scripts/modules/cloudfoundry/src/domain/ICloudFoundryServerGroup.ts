@@ -10,16 +10,11 @@ export interface ICloudFoundryServerGroup extends IServerGroup {
   space: ICloudFoundrySpace;
   droplet: ICloudFoundryDroplet;
   serviceInstances: ICloudFoundryServiceInstance[];
-  env: ICloudFoundryEnvVar[];
+  env: Map<string, string>;
 }
 
 export interface ICloudFoundryServiceInstance {
   name: string;
   plan: string;
   service: string;
-}
-
-export interface ICloudFoundryEnvVar {
-  key: string;
-  value: string;
 }
