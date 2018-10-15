@@ -91,7 +91,7 @@ class ConfigurationSettingsImpl extends React.Component<ICloudFoundryServerGroup
           instances: 1,
           buildpack: undefined,
           routes: [],
-          env: {},
+          env: new Map(),
           services: [],
         };
         break;
@@ -130,9 +130,9 @@ class ConfigurationSettingsImpl extends React.Component<ICloudFoundryServerGroup
     const { manifest } = this.props.formik.values;
     if (isManifestDirectSource(manifest)) {
       if (manifest.env === undefined) {
-        manifest.env = [];
+        manifest.env = new Map();
       }
-      manifest.env.push({ key: '', value: '' });
+      manifest.env.set('', '');
       this.props.formik.setFieldValue('manifest.env', manifest.env);
     }
   };
@@ -140,7 +140,7 @@ class ConfigurationSettingsImpl extends React.Component<ICloudFoundryServerGroup
   private removeEnvironmentVariable = (index: number): void => {
     const { manifest } = this.props.formik.values;
     if (isManifestDirectSource(manifest)) {
-      manifest.env.splice(index, 1);
+      [...manifest.env].splice(index, 1);
       this.props.formik.setFieldValue('manifest.env', manifest.env);
     }
   };
@@ -148,7 +148,10 @@ class ConfigurationSettingsImpl extends React.Component<ICloudFoundryServerGroup
   private environmentKeyUpdated = (index: number, event: React.ChangeEvent<HTMLInputElement>): void => {
     const { manifest } = this.props.formik.values;
     if (isManifestDirectSource(manifest)) {
-      manifest.env[index].key = event.target.value;
+      const tempKey = [...manifest.env][index][0];
+      const tempValue = [...manifest.env][index][1];
+      manifest.env.delete(tempKey);
+      manifest.env.set(event.target.value, tempValue);
       this.props.formik.setFieldValue('manifest.env', manifest.env);
     }
   };
@@ -156,7 +159,8 @@ class ConfigurationSettingsImpl extends React.Component<ICloudFoundryServerGroup
   private environmentValueUpdated = (index: number, event: React.ChangeEvent<HTMLInputElement>): void => {
     const { manifest } = this.props.formik.values;
     if (isManifestDirectSource(manifest)) {
-      manifest.env[index].value = event.target.value;
+      const tempKey = [...manifest.env][index][0];
+      manifest.env.set(tempKey, event.target.value);
       this.props.formik.setFieldValue('manifest.env', manifest.env);
     }
   };
@@ -317,14 +321,14 @@ class ConfigurationSettingsImpl extends React.Component<ICloudFoundryServerGroup
                 </thead>
                 <tbody>
                   {manifest.env &&
-                    manifest.env.map(function(env, index) {
+                    [...manifest.env].map((obj: [string, string], index: number) => {
                       return (
                         <tr key={index}>
                           <td>
                             <input
                               className="form-control input-sm"
                               type="text"
-                              value={env.key}
+                              value={obj[0]}
                               required={true}
                               onChange={event => environmentKeyUpdated(index, event)}
                             />
@@ -333,7 +337,7 @@ class ConfigurationSettingsImpl extends React.Component<ICloudFoundryServerGroup
                             <input
                               className="form-control input-sm"
                               type="text"
-                              value={env.value}
+                              value={obj[1]}
                               required={true}
                               onChange={event => environmentValueUpdated(index, event)}
                             />
@@ -651,22 +655,12 @@ class ConfigurationSettingsImpl extends React.Component<ICloudFoundryServerGroup
         });
       }
       if (values.manifest.env) {
-        const existingKeys: any = {};
-        values.manifest.env.forEach(function(e) {
-          if (!e.key || !e.value) {
+        for (const [key, value] of values.manifest.env.entries()) {
+          if (!key || !value) {
             errors.manifest = errors.manifest || {};
             errors.manifest.env = `An environment variable was not set`;
-          } else {
-            const value = existingKeys[e.key];
-            if (!value) {
-              existingKeys[e.key] = e.value;
-            } else {
-              errors.manifest = errors.manifest || {};
-              errors.manifest.env =
-                `Duplicate environment variable: "` + e.key + `" set to "` + value + `" and "` + e.value + `"`;
-            }
           }
-        });
+        }
       }
     }
     if (isManifestArtifactSource(values.manifest)) {
